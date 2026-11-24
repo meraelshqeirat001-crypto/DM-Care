@@ -1,48 +1,46 @@
-# DM-Care — independent diabetes-support app
+# DM-Care — diabetes support app
 
-A bilingual (Arabic/English), responsive starter project for people living with Type 1 or Type 2 diabetes.
+DM-Care is an independent, bilingual (Arabic/English), responsive app for people living with Type 1 or Type 2 diabetes.
 
-> **Important status:** this ZIP contains the working front-end demo and the separate Firebase/GitHub setup files. The current app stores entries in the browser (`localStorage`). Firebase Authentication and Firestore are **not connected yet**. Do not enter real patient information until authentication, database rules, privacy review, and testing are completed.
+## Firebase integration included
 
-## Project independence
+- Firebase Authentication: email/password account creation, sign-in, sign-out, and password reset.
+- Cloud Firestore: each authenticated user's readings, medication reminders, symptom/event records, and profile are stored under that user's Firebase UID.
+- Guest mode: optional local-only demo data, separate from cloud accounts.
+- Arabic/English interface and the existing dashboard, glucose log, medication reminders, symptom log, education, profile, and CSV export are retained.
 
-Create a **new GitHub repository** and a **new Firebase project** for DM-Care. Do not use, import, overwrite, or change MedGuard-JO files, repositories, Firebase projects, credentials, or settings.
+## Project separation
 
-## What is included
+This project uses only the separate Firebase project `dm-care-47739`. Do not import or modify MedGuard-JO files, repositories, Firebase projects, or credentials.
 
-- `public/index.html` — bilingual app prototype with dashboard, glucose log, medication reminders, symptom/event log, education, profile/settings, CSV export, and browser-local demo storage.
-- `firebase.json` — Firebase Hosting and Firestore configuration.
-- `firestore.rules` — owner-only Firestore access rules for a future `users/{uid}` data structure.
-- `firestore.indexes.json` — currently empty index definition file (add indexes only when required by queries).
-- `firebase-config.example.js` — safe placeholder template for Firebase web-app configuration; it is not a secret and contains no real project credentials.
-- `.firebaserc.example` — example project alias file; replace the placeholder only after creating the new Firebase project.
-- `.gitignore` — excludes local secrets and generated files.
-- `docs/SETUP_GITHUB.md` — GitHub repository and Pages instructions.
-- `docs/SETUP_FIREBASE.md` — separate Firebase project setup and deployment instructions.
-- `docs/TEST_CHECKLIST.md` — functional, usability, and safety test checklist.
+## Files
+
+- `public/index.html` — complete app and Firebase client integration.
+- `firestore.rules` — owner-only access to `users/{uid}/...`; deny all other paths.
+- `firebase.json` and `firestore.indexes.json` — Firebase deployment configuration.
+- `docs/SETUP_GITHUB.md` — GitHub Pages steps.
+- `docs/SETUP_FIREBASE.md` — Firebase setup and authorized-domain steps.
+- `docs/TEST_CHECKLIST.md` — account isolation and functional checks.
 - `docs/PRIVACY_AND_SAFETY.md` — privacy and clinical-safety notes.
 
-## Quick start
+## Before using real patient data
 
-1. Extract this ZIP.
-2. Create a new, empty GitHub repository named `DM-Care` (or another unused name).
-3. Upload the **contents** of this folder to the repository root. Keep `public/` as a folder.
-4. Follow `docs/SETUP_GITHUB.md` to publish using GitHub Pages, or use Firebase Hosting after completing the Firebase setup.
-5. Test using demo data only.
+The frontend is connected to the DM-Care Firebase Web App configuration, but the deployed site must still be tested. Confirm Email/Password is enabled, publish the owner-only Firestore rules, add the exact GitHub Pages hostname to Firebase Authentication's Authorized domains, and test with two separate accounts. Use test data until all checks pass and the privacy/security review is complete.
 
-## Local preview
+Firebase web configuration (including the API key) is designed to be present in client-side apps. It is not a secret and does not grant database access by itself; Firestore Security Rules and Authentication enforce access. Never place service-account JSON, Admin SDK credentials, or private keys in this repository.
 
-You can open `public/index.html` directly in a browser. For a local web server, from this folder run:
+## Data model
 
-```bash
-python -m http.server 8000 -d public
-```
+- `users/{uid}/readings/{recordId}`
+- `users/{uid}/meds/{recordId}`
+- `users/{uid}/events/{recordId}`
+- `users/{uid}/profile/main`
 
-Then open `http://localhost:8000`.
+The app derives `{uid}` from the authenticated Firebase user; it does not accept a UID from user input.
 
-## Current limitations
+## Important limitations
 
-- No Firebase connection, account sign-in, cloud sync, push notifications, or background reminder delivery is implemented in this milestone.
-- Browser reminders and local storage are limited by the browser/device and may not run when the app is closed.
-- The app does not diagnose, calculate insulin doses, recommend medication changes, or replace professional medical care.
-- The education content is general and should be reviewed by a qualified diabetes-care professional before public release.
+- Medication entries are reminders only; the app does not calculate or change doses.
+- No push notifications or guaranteed background reminder delivery are implemented.
+- The app does not diagnose, recommend treatment changes, or replace professional medical care.
+- Guest-mode data remains on the current browser/device and does not sync.

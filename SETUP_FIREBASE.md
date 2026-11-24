@@ -1,54 +1,45 @@
-# Create a separate Firebase project for DM-Care
+# Firebase setup for DM-Care
 
-Do this only in a **new Firebase project**. Do not select or modify MedGuard-JO.
+Use only the independent Firebase project `dm-care-47739`. Never select or change MedGuard-JO.
 
-## A. Create the project and Web App
+## Already configured in this project
 
-1. Open https://console.firebase.google.com/ .
-2. Choose **Add project** and name it `DM-Care` (or `dm-care` if the project ID requires lowercase).
-3. Complete the project wizard. Analytics is optional for this prototype; leave it off unless there is a clear need and an appropriate privacy notice.
-4. In the new project, choose **Add app → Web** and register the app as `DM-Care Web`.
-5. Copy the Firebase web configuration into a private working copy of `firebase-config.example.js`, saved as `firebase-config.js`. The example file is only a template. Do not send passwords, service-account keys, or private credentials in chat.
+- Firebase Web App: `DM-Care-Web`
+- Authentication: Email/Password enabled
+- Cloud Firestore database created
+- Owner-only Firestore rules prepared in `firestore.rules`
+- `public/index.html` imports Firebase JavaScript SDK 13.4.0 and uses the DM-Care Web App configuration
 
-## B. Enable sign-in and Firestore
+## Verify Firebase settings
 
-1. Open **Build → Authentication → Get started**.
-2. Under **Sign-in method**, enable **Email/Password**.
-3. Open **Build → Firestore Database → Create database**.
-4. Choose a location appropriate for your users and data-residency requirements. The database location cannot easily be changed later.
-5. Start in production mode. Do not use open/test rules for real patient data.
-6. Review `firestore.rules`. It restricts access to a signed-in user under `users/{uid}/...` and denies everything else. Deploy it only after reviewing the data model and testing with the Firebase Emulator or test accounts.
+1. Open the Firebase Console and select project `dm-care-47739`.
+2. Go to **Authentication → Settings → Authorized domains**.
+3. Add the exact hostname used by the published GitHub Pages site (for example, `your-account.github.io`; do not include `https://` or a path). Keep `localhost` only if you use it for local testing.
+4. Go to **Firestore Database → Rules** and confirm the published rules match the project's `firestore.rules` file. They must allow authenticated users to access only `users/{their-own-uid}/...` and deny all other paths.
+5. Confirm **Authentication → Sign-in method → Email/Password** remains enabled.
 
-## C. Deploy Firebase Hosting and rules (computer recommended)
+## Firestore data structure
 
-Install Node.js, then install the Firebase CLI:
+- `users/{uid}/readings/{recordId}`
+- `users/{uid}/meds/{recordId}`
+- `users/{uid}/events/{recordId}`
+- `users/{uid}/profile/main`
+
+The client gets the UID from Firebase Authentication. Never loosen the rules to `allow read, write: if true`.
+
+## Deploying rules (optional computer workflow)
+
+If using Firebase CLI from the project root:
 
 ```bash
 npm install -g firebase-tools
 firebase login
-```
-
-From the extracted `DM-Care-project` folder:
-
-```bash
-cp .firebaserc.example .firebaserc
-```
-
-Edit `.firebaserc` and replace `YOUR_NEW_DM_CARE_FIREBASE_PROJECT_ID` with the project ID of the **new DM-Care project**. Then run:
-
-```bash
 firebase use --add
-firebase deploy --only hosting,firestore:rules
+firebase deploy --only firestore:rules
 ```
 
-When asked to choose a project, select the new DM-Care project. Confirm the project ID carefully before deployment.
+When prompted, select `dm-care-47739` and verify the project ID before deployment. GitHub Pages can continue hosting the static frontend; Firebase Hosting is not required for the current setup.
 
-## D. Important integration status
+## Privacy and testing
 
-The supplied `public/index.html` is still a local-storage demo and does not import or use the Firebase configuration. Creating a Firebase project or deploying the rules does not automatically connect the app to Authentication or Firestore. That integration is a separate development step and must be tested before storing real user data.
-
-## Security reminders
-
-- Firebase web config is intended to be present in a client app; it is not a substitute for security rules.
-- Never place service-account JSON, private keys, passwords, or Admin SDK credentials in the `public` folder or GitHub.
-- Do not collect real patient information during prototype testing.
+Use fictional test information until the app passes the checklist. Create two separate test accounts and verify that neither account can see or alter the other's records. Never upload a service-account key or Admin SDK credential to GitHub. The Firebase Web App config in `public/index.html` is client configuration, not a private key.
